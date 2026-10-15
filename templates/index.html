@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}CampusMart — Student Buy & Sell Marketplace{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-center">
+    <div class="container position-relative">
+        <span class="badge bg-white text-primary fw-semibold px-3 py-2 rounded-pill mb-3 shadow-sm">
+            🎓 Campus Marketplace for Engineering Students
+        </span>
+        <h1 class="hero-title mb-3">Buy & Sell Used College Gear With Peers</h1>
+        <p class="hero-subtitle mx-auto mb-4">
+            Pass on your previous semester textbooks, drawing drafters, scientific calculators, and electronics kits to juniors at fair prices.
+        </p>
+
+        <!-- Prominent Search Bar -->
+        <div class="hero-search-box mx-auto">
+            <form action="{{ url_for('browse_products') }}" method="GET" class="d-flex align-items-center">
+                <i class="bi bi-search text-muted fs-5 ms-3"></i>
+                <input type="text" name="q" class="form-control" placeholder="Search textbooks, calculators, lab equipment..." aria-label="Search">
+                <button type="submit" class="btn btn-campusmart rounded-pill px-4">Find Items</button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Category Shortcuts -->
+<div class="container mb-5">
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <div>
+            <h4 class="fw-bold mb-1">Browse by Category</h4>
+            <p class="text-muted small mb-0">Discover popular resources across engineering branches</p>
+        </div>
+        <a href="{{ url_for('browse_products') }}" class="text-decoration-none fw-semibold small text-primary">
+            View All <i class="bi bi-arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{{ url_for('browse_products', category='Textbooks') }}" class="category-card">
+                <div class="category-icon"><i class="bi bi-book"></i></div>
+                <div class="fw-bold small">Textbooks</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Books & Guides</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{{ url_for('browse_products', category='Calculators') }}" class="category-card">
+                <div class="category-icon"><i class="bi bi-calculator"></i></div>
+                <div class="fw-bold small">Calculators</div>
+                <div class="text-muted" style="font-size: 0.75rem;">fx-991EX, fx-82</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{{ url_for('browse_products', category='Electronics') }}" class="category-card">
+                <div class="category-icon"><i class="bi bi-cpu"></i></div>
+                <div class="fw-bold small">Electronics</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Arduino, Sensors</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{{ url_for('browse_products', category='Stationery') }}" class="category-card">
+                <div class="category-icon"><i class="bi bi-pencil-ruler"></i></div>
+                <div class="fw-bold small">Stationery</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Drafters, Kits</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{{ url_for('browse_products', category='Lab Equipment') }}" class="category-card">
+                <div class="category-icon"><i class="bi bi-tools"></i></div>
+                <div class="fw-bold small">Lab Equipment</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Coats, Breadboards</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a href="{{ url_for('browse_products', category='Other') }}" class="category-card">
+                <div class="category-icon"><i class="bi bi-grid-3x3-gap"></i></div>
+                <div class="fw-bold small">Accessories</div>
+                <div class="text-muted" style="font-size: 0.75rem;">Bags, USB Drives</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Marketplace Live Metrics -->
+<div class="container mb-5">
+    <div class="row g-3">
+        <div class="col-md-3 col-6">
+            <div class="stat-box">
+                <div class="stat-number">{{ stats.total_products }}</div>
+                <div class="stat-label"><i class="bi bi-box-seam me-1 text-primary"></i> Total Listings</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-box">
+                <div class="stat-number text-success">{{ stats.available_products }}</div>
+                <div class="stat-label"><i class="bi bi-check-circle me-1 text-success"></i> Available Now</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-box">
+                <div class="stat-number text-danger">{{ stats.sold_products }}</div>
+                <div class="stat-label"><i class="bi bi-handshake me-1 text-danger"></i> Successfully Sold</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-box">
+                <div class="stat-number text-info">{{ stats.total_users }}</div>
+                <div class="stat-label"><i class="bi bi-people me-1 text-info"></i> Registered Students</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured / Recent Listings -->
+<div class="container mb-5">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Recently Listed Items</h4>
+            <p class="text-muted small mb-0">Check out what fellow students posted recently</p>
+        </div>
+        <a href="{{ url_for('browse_products') }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+            Explore All Listings
+        </a>
+    </div>
+
+    <div class="row g-4">
+        {% for prod in featured_products %}
+            <div class="col-md-6 col-lg-3">
+                <div class="product-card">
+                    <div class="product-image-container">
+                        {% if prod.image_filename and prod.image_filename != 'placeholder.svg' %}
+                            <img src="{{ url_for('uploaded_file', filename=prod.image_filename) }}" alt="{{ prod.name }}" class="product-image">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="{{ prod.name }}" class="product-image">
+                        {% endif %}
+                        <span class="badge-condition">{{ prod.condition }}</span>
+                        {% if prod.status == 'Available' %}
+                            <span class="badge-status-available">● Available</span>
+                        {% else %}
+                            <span class="badge-status-sold">✕ Sold</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-body">
+                        <div class="product-category-text">{{ prod.category }}</div>
+                        <h6 class="product-title" title="{{ prod.name }}">{{ prod.name }}</h6>
+                        <div class="product-price">₹{{ "%.2f"|format(prod.price) }}</div>
+                        <div class="product-seller-info mb-3">
+                            <i class="bi bi-person me-1"></i> {{ prod.seller_name }}
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('product_detail', product_id=prod.id) }}" class="btn btn-outline-primary btn-sm fw-semibold">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">No products available at the moment.</p>
+                <a href="{{ url_for('sell_product') }}" class="btn btn-primary btn-sm">Be the first to post!</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="container mb-5">
+    <div class="bg-white border rounded-4 p-4 p-lg-5 shadow-sm">
+        <div class="text-center mb-5">
+            <h4 class="fw-bold mb-2">How CampusMart Works</h4>
+            <p class="text-muted small">Simple 3-step peer-to-peer exchange on your university campus</p>
+        </div>
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="category-icon mb-3"><i class="bi bi-camera"></i></div>
+                <h6 class="fw-bold">1. Post Your Unused Gear</h6>
+                <p class="text-muted small">List your old semester books, drafters, or calculators in under 60 seconds with simple condition and price details.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="category-icon mb-3"><i class="bi bi-chat-dots"></i></div>
+                <h6 class="fw-bold">2. Direct Peer Connection</h6>
+                <p class="text-muted small">Interested students contact you directly via phone or college email. No transaction fees, no middlemen.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="category-icon mb-3"><i class="bi bi-hand-thumbs-up"></i></div>
+                <h6 class="fw-bold">3. Campus Handover & Save</h6>
+                <p class="text-muted small">Meet safely in the college canteen, library, or department block to inspect and hand over the item.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

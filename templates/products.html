@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Products — CampusMart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-decoration-none">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Browse Products</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold mb-0">Campus Marketplace Listings</h3>
+        </div>
+        <div class="mt-2 mt-md-0 text-muted small">
+            Showing <strong class="text-dark">{{ products|length }}</strong> item(s) found
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3">
+            <div class="filter-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-funnel me-1 text-primary"></i> Filter Products</h6>
+                    <a href="{{ url_for('browse_products') }}" class="text-decoration-none small text-danger fw-semibold">
+                        Reset All
+                    </a>
+                </div>
+
+                <form action="{{ url_for('browse_products') }}" method="GET">
+                    <!-- Search Field -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Keyword Search</label>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                            <input type="text" name="q" class="form-control" placeholder="Search by name..." value="{{ request.args.get('q', '') }}">
+                        </div>
+                    </div>
+
+                    <!-- Category Filter -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Category</label>
+                        <select name="category" class="form-select form-select-sm">
+                            <option value="All" {% if not request.args.get('category') or request.args.get('category') == 'All' %}selected{% endif %}>All Categories</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat }}" {% if request.args.get('category') == cat %}selected{% endif %}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Condition Filter -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Item Condition</label>
+                        <select name="condition" class="form-select form-select-sm">
+                            <option value="All" {% if not request.args.get('condition') or request.args.get('condition') == 'All' %}selected{% endif %}>All Conditions</option>
+                            {% for cond in conditions %}
+                                <option value="{{ cond }}" {% if request.args.get('condition') == cond %}selected{% endif %}>{{ cond }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Price Range Filter -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Price Range (₹)</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="number" name="min_price" class="form-control form-control-sm" placeholder="Min" value="{{ request.args.get('min_price', '') }}">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" name="max_price" class="form-control form-control-sm" placeholder="Max" value="{{ request.args.get('max_price', '') }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Sort By</label>
+                        <select name="sort" class="form-select form-select-sm">
+                            <option value="newest" {% if not request.args.get('sort') or request.args.get('sort') == 'newest' %}selected{% endif %}>Newest First</option>
+                            <option value="price_asc" {% if request.args.get('sort') == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_desc" {% if request.args.get('sort') == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="oldest" {% if request.args.get('sort') == 'oldest' %}selected{% endif %}>Oldest First</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-campusmart btn-sm">Apply Filters</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="col-lg-9">
+            {% if products %}
+                <div class="row g-4">
+                    {% for prod in products %}
+                        <div class="col-md-6 col-xl-4">
+                            <div class="product-card">
+                                <div class="product-image-container">
+                                    {% if prod.image_filename and prod.image_filename != 'placeholder.svg' %}
+                                        <img src="{{ url_for('uploaded_file', filename=prod.image_filename) }}" alt="{{ prod.name }}" class="product-image">
+                                    {% else %}
+                                        <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="{{ prod.name }}" class="product-image">
+                                    {% endif %}
+                                    <span class="badge-condition">{{ prod.condition }}</span>
+                                    {% if prod.status == 'Available' %}
+                                        <span class="badge-status-available">● Available</span>
+                                    {% else %}
+                                        <span class="badge-status-sold">✕ Sold</span>
+                                    {% endif %}
+                                </div>
+                                <div class="product-body">
+                                    <div class="product-category-text">{{ prod.category }}</div>
+                                    <h6 class="product-title" title="{{ prod.name }}">
+                                        <a href="{{ url_for('product_detail', product_id=prod.id) }}" class="text-decoration-none text-dark">
+                                            {{ prod.name }}
+                                        </a>
+                                    </h6>
+                                    <div class="product-price">₹{{ "%.2f"|format(prod.price) }}</div>
+                                    
+                                    <div class="product-seller-info mb-3">
+                                        <i class="bi bi-person me-1"></i> {{ prod.seller_name }}
+                                    </div>
+
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('product_detail', product_id=prod.id) }}" class="btn btn-outline-primary btn-sm fw-semibold flex-grow-1">
+                                            View Details
+                                        </a>
+                                        {% if session.get('user_id') %}
+                                            <form action="{{ url_for('toggle_wishlist', product_id=prod.id) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Add to Wishlist">
+                                                    <i class="bi bi-heart"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="bg-white border rounded-4 p-5 text-center shadow-sm">
+                    <div class="display-6 text-muted mb-3"><i class="bi bi-search"></i></div>
+                    <h5 class="fw-bold mb-2">No matching products found</h5>
+                    <p class="text-muted small mb-4">
+                        We could not find any items matching your selected filters or search terms. Try loosening your price filters or searching with a different keyword.
+                    </p>
+                    <a href="{{ url_for('browse_products') }}" class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                        Clear All Filters
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

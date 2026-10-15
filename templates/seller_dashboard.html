@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Seller Dashboard — CampusMart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1"><i class="bi bi-speedometer2 text-primary me-2"></i> Seller Dashboard</h3>
+            <p class="text-muted small mb-0">Manage all items you listed on the student marketplace</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="{{ url_for('sell_product') }}" class="btn btn-campusmart btn-sm rounded-pill px-3">
+                <i class="bi bi-plus-circle me-1"></i> Post Another Item
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-box">
+                <div class="stat-number">{{ stats.total }}</div>
+                <div class="stat-label"><i class="bi bi-box me-1 text-primary"></i> Total Listings</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-box">
+                <div class="stat-number text-success">{{ stats.available }}</div>
+                <div class="stat-label"><i class="bi bi-check-circle me-1 text-success"></i> Active / Available</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-box">
+                <div class="stat-number text-danger">{{ stats.sold }}</div>
+                <div class="stat-label"><i class="bi bi-handshake me-1 text-danger"></i> Marked as Sold</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Management Table -->
+    <div class="card border rounded-4 overflow-hidden shadow-sm">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="fw-bold mb-0">Your Posted Products</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 80px;">Item</th>
+                        <th>Title & Category</th>
+                        <th>Price</th>
+                        <th>Condition</th>
+                        <th>Status</th>
+                        <th>Date Listed</th>
+                        <th class="text-end" style="width: 220px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                        <tr>
+                            <td>
+                                {% if p.image_filename and p.image_filename != 'placeholder.svg' %}
+                                    <img src="{{ url_for('uploaded_file', filename=p.image_filename) }}" alt="{{ p.name }}" class="rounded-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="{{ p.name }}" class="rounded-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">{{ p.name }}</div>
+                                <div class="text-muted small"><span class="badge bg-light text-dark border">{{ p.category }}</span></div>
+                            </td>
+                            <td class="fw-bold text-primary">₹{{ "%.2f"|format(p.price) }}</td>
+                            <td><span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">{{ p.condition }}</span></td>
+                            <td>
+                                {% if p.status == 'Available' %}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">Available</span>
+                                {% else %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Sold</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted small">{{ p.created_at[:10] }}</td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-1">
+                                    <!-- Toggle Sold/Available -->
+                                    <form action="{{ url_for('toggle_status', product_id=p.id) }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        {% if p.status == 'Available' %}
+                                            <button type="submit" class="btn btn-outline-success btn-sm" title="Mark as Sold">
+                                                <i class="bi bi-check2-circle"></i>
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm" title="Mark as Available">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            </button>
+                                        {% endif %}
+                                    </form>
+
+                                    <!-- Edit -->
+                                    <a href="{{ url_for('edit_product', product_id=p.id) }}" class="btn btn-outline-primary btn-sm" title="Edit Listing">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+
+                                    <!-- Delete -->
+                                    <form action="{{ url_for('delete_product', product_id=p.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete this listing?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Listing">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                You haven't posted any products for sale yet.
+                                <br><br>
+                                <a href="{{ url_for('sell_product') }}" class="btn btn-primary btn-sm rounded-pill px-4">Post Your First Item</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

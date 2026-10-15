@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found (404) — CampusMart{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="card border-0 shadow-sm p-5 mx-auto" style="max-width: 500px; border-radius: 16px;">
+        <div class="display-1 text-primary mb-3"><i class="bi bi-question-circle"></i></div>
+        <h3 class="fw-bold mb-2">404 — Listing or Page Not Found</h3>
+        <p class="text-muted small mb-4">
+            The page or product listing you requested does not exist or may have been removed by the seller.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('browse_products') }}" class="btn btn-campusmart rounded-pill px-4">Browse Marketplace</a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary rounded-pill px-4">Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

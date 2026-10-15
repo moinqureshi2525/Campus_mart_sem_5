@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Listing #{{ product.id }} — CampusMart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border rounded-4 p-4 p-md-5 shadow-sm">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 rounded-pill fw-semibold mb-1">
+                            Listing #{{ product.id }}
+                        </span>
+                        <h3 class="fw-bold mb-0">Edit Product Listing</h3>
+                    </div>
+                    <a href="{{ url_for('seller_dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                </div>
+
+                <form action="{{ url_for('edit_product', product_id=product.id) }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Product Name -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Product Title <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" value="{{ product.name }}" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <!-- Category -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-select" required>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}" {% if product.category == cat %}selected{% endif %}>{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Condition -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Condition <span class="text-danger">*</span></label>
+                            <select name="condition" class="form-select" required>
+                                {% for cond in conditions %}
+                                    <option value="{{ cond }}" {% if product.condition == cond %}selected{% endif %}>{{ cond }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <!-- Price -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Price in Rupees (₹) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" step="0.5" min="0" name="price" class="form-control" value="{{ product.price }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Listing Status</label>
+                            <select name="status" class="form-select">
+                                <option value="Available" {% if product.status == 'Available' %}selected{% endif %}>Available</option>
+                                <option value="Sold" {% if product.status == 'Sold' %}selected{% endif %}>Sold</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description & Condition Notes</label>
+                        <textarea name="description" rows="4" class="form-control">{{ product.description }}</textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <!-- Seller Name -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Seller Display Name <span class="text-danger">*</span></label>
+                            <input type="text" name="seller_name" class="form-control" value="{{ product.seller_name }}" required>
+                        </div>
+
+                        <!-- Seller Contact -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Seller Contact <span class="text-danger">*</span></label>
+                            <input type="text" name="seller_contact" class="form-control" value="{{ product.seller_contact }}" required>
+                        </div>
+                    </div>
+
+                    <!-- Current & New Image -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Replace Product Image (Optional)</label>
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            {% if product.image_filename and product.image_filename != 'placeholder.svg' %}
+                                <img src="{{ url_for('uploaded_file', filename=product.image_filename) }}" alt="Current" class="img-thumbnail" style="height: 70px; width: 70px; object-fit: cover;">
+                                <span class="text-muted small">Current image: {{ product.image_filename }}</span>
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/placeholder.svg') }}" alt="Default" class="img-thumbnail" style="height: 70px; width: 70px;">
+                                <span class="text-muted small">Using standard placeholder image</span>
+                            {% endif %}
+                        </div>
+                        <input type="file" name="image" id="productImageInput" class="form-control" accept="image/png, image/jpeg, image/jpg, image/webp">
+                        <div class="form-text">Leave blank to keep current image. Supported formats: JPG, PNG, WEBP (Max 5MB).</div>
+                        <div class="mt-2 text-center">
+                            <img id="imagePreview" src="#" alt="Preview" class="img-thumbnail d-none" style="max-height: 160px;">
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-save me-2"></i> Save Changes to Listing
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <!-- Danger Zone: Delete -->
+                <div class="bg-danger-subtle border border-danger-subtle rounded-3 p-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                    <div>
+                        <div class="fw-bold text-danger"><i class="bi bi-trash3 me-1"></i> Permanently Delete Listing</div>
+                        <div class="text-muted small">Once deleted, this item and its wishlist entries cannot be recovered.</div>
+                    </div>
+                    <form action="{{ url_for('delete_product', product_id=product.id) }}" method="POST" class="mt-2 mt-md-0" onsubmit="return confirm('Are you sure you want to permanently delete this listing?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            Delete Listing
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

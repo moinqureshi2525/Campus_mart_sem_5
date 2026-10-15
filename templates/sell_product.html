@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Post an Item for Sale — CampusMart{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border rounded-4 p-4 p-md-5 shadow-sm">
+                <div class="text-center mb-4">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill fw-semibold mb-2">
+                        Post Listing
+                    </span>
+                    <h3 class="fw-bold">Sell Your College Educational Item</h3>
+                    <p class="text-muted small">Fill out the details below to list your textbook, calculator, kit, or stationery for campus peers.</p>
+                </div>
+
+                <form action="{{ url_for('sell_product') }}" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Product Name -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Product Title <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Higher Engineering Mathematics by B.S. Grewal (43rd Edition)" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <!-- Category -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Category <span class="text-danger">*</span></label>
+                            <select name="category" class="form-select" required>
+                                {% for cat in categories %}
+                                    <option value="{{ cat }}">{{ cat }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Condition -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Condition <span class="text-danger">*</span></label>
+                            <select name="condition" class="form-select" required>
+                                {% for cond in conditions %}
+                                    <option value="{{ cond }}" {% if cond == 'Good' %}selected{% endif %}>{{ cond }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <!-- Price -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Price in Rupees (₹) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">₹</span>
+                                <input type="number" step="0.5" min="0" name="price" class="form-control" placeholder="e.g. 450" required>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Listing Status</label>
+                            <select name="status" class="form-select">
+                                <option value="Available" selected>Available</option>
+                                <option value="Sold">Sold</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description & Condition Notes</label>
+                        <textarea name="description" rows="4" class="form-control" placeholder="Mention edition, authors, whether pencil notes or highlights are present, and what is included (e.g. drafter cover, calculator case)."></textarea>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <!-- Seller Name -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Your Name / Display Name <span class="text-danger">*</span></label>
+                            <input type="text" name="seller_name" class="form-control" value="{{ session.get('user_name', '') }}" required>
+                        </div>
+
+                        <!-- Seller Contact -->
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Contact Info (Phone or Email) <span class="text-danger">*</span></label>
+                            <input type="text" name="seller_contact" class="form-control" value="{{ session.get('user_email', '') }}" placeholder="e.g. 9876543210 or yourname@college.edu" required>
+                        </div>
+                    </div>
+
+                    <!-- Image Upload -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Upload Product Image (Optional)</label>
+                        <input type="file" name="image" id="productImageInput" class="form-control" accept="image/png, image/jpeg, image/jpg, image/webp">
+                        <div class="form-text">Supported formats: JPG, PNG, WEBP. Max file size: 5MB. A default illustration will be used if omitted.</div>
+                        <div class="mt-2 text-center">
+                            <img id="imagePreview" src="#" alt="Preview" class="img-thumbnail d-none" style="max-height: 160px;">
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-campusmart btn-lg">
+                            <i class="bi bi-cloud-arrow-up me-2"></i> Publish Listing to CampusMart
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
